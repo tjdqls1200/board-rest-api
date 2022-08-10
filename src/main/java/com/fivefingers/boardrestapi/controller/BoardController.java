@@ -21,6 +21,7 @@ public class BoardController {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .build();
+        // test
         return ResponseEntity.ok().body(boardDto);
     }
 }
