@@ -25,9 +25,9 @@ public class MemberRepository {
                 .getResultList();
     }
 
-    public Member findById(Long memberId) {
-        return Optional.ofNullable(em.find(Member.class, memberId))
-                .orElseThrow(() -> new MemberNotFoundException("회원을 찾을 수 없습니다."));
+    public Optional<Member> findById(Long memberId) {
+        return Optional.ofNullable(em.find(Member.class, memberId));
+                //.orElseThrow(() -> new MemberNotFoundException("회원을 찾을 수 없습니다."));
     }
 
 

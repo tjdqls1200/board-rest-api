@@ -32,7 +32,7 @@ public class MemberController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/members/{id}")
     public ReadMemberDto readMember(@PathVariable Long id) {
-        Member findMember = memberRepository.findById(id);
+        Member findMember = memberService.find(id);
         return ReadMemberDto.from(findMember);
     }
 

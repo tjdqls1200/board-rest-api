@@ -3,6 +3,7 @@ package com.fivefingers.boardrestapi.service;
 import com.fivefingers.boardrestapi.domain.member.Member;
 import com.fivefingers.boardrestapi.exception.DuplicateMemberException;
 import com.fivefingers.boardrestapi.exception.LoginNotEqualsException;
+import com.fivefingers.boardrestapi.exception.MemberNotFoundException;
 import com.fivefingers.boardrestapi.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,14 +24,18 @@ public class MemberService {
         memberRepository.save(member);
     }
 
+    public Member find(Long id) {
+        return memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("없는 회원"));
+    }
+
     public boolean update(UpdateMemberDto updateMemberDto) {
-        Member findMember = memberRepository.findById(updateMemberDto.getId());
+        Member findMember = find(updateMemberDto.getId());
         loginChecked(findMember, updateMemberDto.getLoginId(), updateMemberDto.getPassword());
         return findMember.updateMember(updateMemberDto);
     }
 
     public void delete(DeleteMemberDto deleteMemberDto) {
-        Member findMember = memberRepository.findById(deleteMemberDto.getId());
+        Member findMember = find(deleteMemberDto.getId());
         loginChecked(findMember, deleteMemberDto.getLoginId(), deleteMemberDto.getPassword());
         memberRepository.delete(findMember);
     }
