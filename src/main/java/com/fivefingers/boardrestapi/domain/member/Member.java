@@ -36,8 +36,8 @@ public class Member {
     }
 
     public boolean updateMember(UpdateMemberDto updateMemberDto) {
-        if (updateMemberDto.getPassword().equals(updateMemberDto.getNewPassword()) &&
-                this.getUsername().equals(updateMemberDto.getUsername())) {
+        if (password.equals(updateMemberDto.getNewPassword()) &&
+                username.equals(updateMemberDto.getUsername())) {
             return false;
         }
         this.password = updateMemberDto.getNewPassword();

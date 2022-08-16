@@ -30,17 +30,8 @@ public class MemberDto {
     @AllArgsConstructor
     public static class UpdateMemberDto {
 
-        private Long id;
-
-        @NotBlank
-        @Pattern(regexp = "^[a-zA-Z0-9]*${6,12}", message = "아이디는 영어와 숫자를 포함한 6 ~ 12자 이내여야 합니다.")
-        private String loginId;
-
-        @Pattern(regexp = "(?=.*[A-Z])(?=.*\\W)(?=\\S+$).{10,16}", message = "비밀번호는 대문자, 특수문자를 포함한 10 ~ 16자 이내여야 합니다.")
-        @NotBlank
-        private String password;
-
-        @Pattern(regexp = "(?=.*[A-Z])(?=.*\\W)(?=\\S+$).{10,16}", message = "비밀번호는 대문자, 특수문자를 포함한 10 ~ 16자 이내여야 합니다.")
+        @Pattern(regexp = "(?=.*[A-Z])(?=.*\\W)(?=\\S+$).{10,16}",
+                message = "비밀번호는 대문자, 특수문자를 포함한 10 ~ 16자 이내여야 합니다.")
         private String newPassword;
 
         @Size(min = 2, max = 10, message = "닉네임은 2 ~ 10 자리 이내로 입력해야 됩니다.")
@@ -48,7 +39,6 @@ public class MemberDto {
     }
 
     @Data
-    @AllArgsConstructor
     public static class DeleteMemberDto {
         private Long id;
 

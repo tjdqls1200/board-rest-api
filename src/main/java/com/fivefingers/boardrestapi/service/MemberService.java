@@ -1,14 +1,15 @@
 package com.fivefingers.boardrestapi.service;
 
 import com.fivefingers.boardrestapi.domain.member.Member;
-import com.fivefingers.boardrestapi.exception.DuplicateMemberException;
-import com.fivefingers.boardrestapi.exception.LoginNotEqualsException;
-import com.fivefingers.boardrestapi.exception.MemberNotFoundException;
+import com.fivefingers.boardrestapi.exception.MemberErrorCode;
+import com.fivefingers.boardrestapi.exception.RestApiException;
 import com.fivefingers.boardrestapi.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
+import java.util.List;
 
 import static com.fivefingers.boardrestapi.domain.member.MemberDto.*;
 
@@ -20,32 +21,26 @@ public class MemberService {
 
     public void join(Member member) {
         if (!memberRepository.findByLoginId(member.getLoginId()).isEmpty())
-            throw new DuplicateMemberException(String.format("[%s]는 이미 존재하는 아이디입니다.", member.getLoginId()));
+            // loginId가 unique index이면 굳이 아이디를 체크하지 않아도 DB Exception이 뜰거 같은데
+            throw new RestApiException(MemberErrorCode.DUPLICATE_LOGIN_ID);
         memberRepository.save(member);
     }
-
-    public Member find(Long id) {
-        return memberRepository.findById(id).orElseThrow(() -> new MemberNotFoundException("없는 회원"));
+    public Member findOne(Long id) {
+        return memberRepository.findById(id).orElseThrow(
+                () -> new RestApiException(MemberErrorCode.MEMBER_NOT_FOUND));
     }
 
-    public boolean update(UpdateMemberDto updateMemberDto) {
-        Member findMember = find(updateMemberDto.getId());
-        loginChecked(findMember, updateMemberDto.getLoginId(), updateMemberDto.getPassword());
+    public List<Member> findAll() {
+        return memberRepository.findAll();
+    }
+
+    public boolean update(Long memberId, UpdateMemberDto updateMemberDto) {
+        Member findMember = findOne(memberId);
         return findMember.updateMember(updateMemberDto);
     }
 
-    public void delete(DeleteMemberDto deleteMemberDto) {
-        Member findMember = find(deleteMemberDto.getId());
-        loginChecked(findMember, deleteMemberDto.getLoginId(), deleteMemberDto.getPassword());
-        memberRepository.delete(findMember);
+    public void delete(Long memberId) {
+        memberRepository.delete(memberId);
     }
 
-    private void loginChecked(Member member, String loginId , String password) {
-        if (!member.getLoginId().equals(loginId)) {
-            throw new LoginNotEqualsException("아이디가 일치하지 않습니다.");
-        }
-        if (!member.getPassword().equals(password)) {
-            throw new LoginNotEqualsException("패스워드가 일치하지 않습니다.");
-        }
-    }
 }

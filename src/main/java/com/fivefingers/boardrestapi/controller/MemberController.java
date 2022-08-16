@@ -32,7 +32,7 @@ public class MemberController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/members/{id}")
     public ReadMemberDto readMember(@PathVariable Long id) {
-        Member findMember = memberService.find(id);
+        Member findMember = memberService.findOne(id);
         return ReadMemberDto.from(findMember);
     }
 
@@ -48,20 +48,17 @@ public class MemberController {
     @PatchMapping("/members/{id}")
     public ResponseEntity<UpdateMemberDto> updateMember(@PathVariable Long id,
                                                         @RequestBody @Valid UpdateMemberDto updateMemberDto) {
-        // id를 set으로 넣고 Dto만 넘겨줄지, id + dto를 넘겨줄지
-        updateMemberDto.setId(id);
-        if (!memberService.update(updateMemberDto)) {
+        if (!memberService.update(id, updateMemberDto)) {
+            //변경 없을 경우 HTTP Status 204 Code
             ResponseEntity.noContent().build();
         }
         return ResponseEntity.created(URI.create("/api/v1/users/" + id)).body(updateMemberDto);
     }
 
+
     @DeleteMapping("/members/{id}")
-    public ResponseEntity<DeleteMemberDto> deleteMember(@PathVariable Long id,
-                             @RequestBody @Valid DeleteMemberDto deleteMemberDto) {
-        // id를 set으로 넣고 Dto만 넘겨줄지, id + dto를 넘겨줄지
-        deleteMemberDto.setId(id);
-        memberService.delete(deleteMemberDto);
-        return ResponseEntity.ok(deleteMemberDto);
+    public ResponseEntity<?> deleteMember(@PathVariable Long id) {
+        memberService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

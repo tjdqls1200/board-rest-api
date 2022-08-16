@@ -1,7 +1,6 @@
 package com.fivefingers.boardrestapi.repository;
 
 import com.fivefingers.boardrestapi.domain.member.Member;
-import com.fivefingers.boardrestapi.exception.MemberNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -27,7 +26,6 @@ public class MemberRepository {
 
     public Optional<Member> findById(Long memberId) {
         return Optional.ofNullable(em.find(Member.class, memberId));
-                //.orElseThrow(() -> new MemberNotFoundException("회원을 찾을 수 없습니다."));
     }
 
 
@@ -35,7 +33,7 @@ public class MemberRepository {
         return em.createQuery("select m from Member m", Member.class).getResultList();
     }
 
-    public void delete(Member member) {
-        em.remove(member);
+    public void delete(Long memberId) {
+        em.remove(memberId);
     }
 }
