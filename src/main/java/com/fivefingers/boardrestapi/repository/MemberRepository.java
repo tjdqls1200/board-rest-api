@@ -28,12 +28,11 @@ public class MemberRepository {
         return Optional.ofNullable(em.find(Member.class, memberId));
     }
 
-
     public List<Member> findAll() {
         return em.createQuery("select m from Member m", Member.class).getResultList();
     }
 
-    public void delete(Long memberId) {
-        em.remove(memberId);
+    public void delete(Member member) {
+        em.remove(member);
     }
 }

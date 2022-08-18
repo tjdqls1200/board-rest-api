@@ -1,6 +1,8 @@
 package com.fivefingers.boardrestapi.domain.member;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,6 +13,7 @@ import javax.validation.constraints.Size;
 
 public class MemberDto {
     @Data
+    @Builder
     @AllArgsConstructor
     public static class CreateMemberDto {
         @NotBlank
@@ -67,6 +70,7 @@ public class MemberDto {
     @Data
     @AllArgsConstructor
     public static class WrappedList<T> {
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
         private T list;
     }
 

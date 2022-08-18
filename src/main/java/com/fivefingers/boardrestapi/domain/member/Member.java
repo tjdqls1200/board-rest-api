@@ -14,7 +14,7 @@ import static com.fivefingers.boardrestapi.domain.member.MemberDto.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Column(length = 20, unique = true, nullable = false)

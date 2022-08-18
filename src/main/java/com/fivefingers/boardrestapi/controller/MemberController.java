@@ -20,13 +20,15 @@ import static com.fivefingers.boardrestapi.domain.member.MemberDto.*;
 @RequestMapping("/api/v1")
 public class MemberController {
     private final MemberService memberService;
-    private final MemberRepository memberRepository;
 
     @PostMapping("/members")
     public ResponseEntity<CreateMemberDto> createMember(@RequestBody @Valid CreateMemberDto createMemberDto) {
+        // 여기서 테스트 해야될게 있나..?
+        // memberService.join()은 서비스에서 테스트할 부분
+        //
         Member member = Member.from(createMemberDto);
-        memberService.join(member);
-        return ResponseEntity.created(URI.create("/api/v1/users/" + member.getId())).body(createMemberDto);
+        Long memberId = memberService.join(member);
+        return ResponseEntity.created(URI.create(String.format("/api/v1/members/%d", memberId))).body(createMemberDto);
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -39,26 +41,25 @@ public class MemberController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/members")
     public WrappedList<List<ReadMemberDto>> readMemberList() {
-        List<ReadMemberDto> memberDtoList = memberRepository.findAll().stream()
+        List<ReadMemberDto> memberDtoList = memberService.findAll().stream()
                 .map(ReadMemberDto::from)
                 .collect(Collectors.toList());
         return new WrappedList<>(memberDtoList);
     }
 
     @PatchMapping("/members/{id}")
-    public ResponseEntity<UpdateMemberDto> updateMember(@PathVariable Long id,
+    public ResponseEntity<Object> updateMember(@PathVariable Long id,
                                                         @RequestBody @Valid UpdateMemberDto updateMemberDto) {
         if (!memberService.update(id, updateMemberDto)) {
             //변경 없을 경우 HTTP Status 204 Code
-            ResponseEntity.noContent().build();
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.created(URI.create("/api/v1/users/" + id)).body(updateMemberDto);
+        return ResponseEntity.ok(URI.create(String.format("/api/v1/members/%d", id)));
     }
 
-
     @DeleteMapping("/members/{id}")
-    public ResponseEntity<?> deleteMember(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteMember(@PathVariable Long id) {
         memberService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }

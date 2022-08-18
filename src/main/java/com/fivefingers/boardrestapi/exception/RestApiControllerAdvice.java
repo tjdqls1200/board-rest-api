@@ -19,7 +19,10 @@ public class RestApiControllerAdvice extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(
             Exception ex, Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        return ResponseEntity.status(status).body(new ErrorResult(status.toString(), ex.getMessage()));
+        return ResponseEntity
+                .status(status)
+                // DefaultHandlerExceptionResolver로 넘어가는 예외를 어떤식으로 처리할지
+                .body(new ErrorResult(status.toString(), ex.getMessage()));
     }
 
     //@Valid 유효성 통과하지 못하면 MethodArgumentNotValidException
@@ -30,13 +33,18 @@ public class RestApiControllerAdvice extends ResponseEntityExceptionHandler {
         CommonErrorCode errorCode = CommonErrorCode.VALIDATION_FAILED_PARAMETER;
         List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
 
-        return ResponseEntity.status(errorCode.getHttpStatus())
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
                 .body(ErrorResult.from(errorCode, fieldErrors));
     }
 
     @ExceptionHandler(RestApiException.class)
     public ResponseEntity<ErrorResult> memberNotFoundExHandle(RestApiException e) {
         ErrorCode errorCode = e.getErrorCode();
-        return ResponseEntity.status(errorCode.getHttpStatus()).body(ErrorResult.of(errorCode));
+        ErrorResult errorResult = ErrorResult.of(errorCode);
+
+        return ResponseEntity
+                .status(errorCode.getHttpStatus())
+                .body(errorResult);
     }
 }

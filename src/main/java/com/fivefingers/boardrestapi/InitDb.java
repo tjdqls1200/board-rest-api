@@ -3,6 +3,7 @@ package com.fivefingers.boardrestapi;
 import com.fivefingers.boardrestapi.domain.member.Member;
 import com.fivefingers.boardrestapi.domain.member.MemberDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +12,7 @@ import javax.persistence.EntityManager;
 
 import static com.fivefingers.boardrestapi.domain.member.MemberDto.*;
 
+@Profile("dev")
 @Component
 @RequiredArgsConstructor
 public class InitDb {
