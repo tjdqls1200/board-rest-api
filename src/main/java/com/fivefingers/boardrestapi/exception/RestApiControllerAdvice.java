@@ -22,6 +22,7 @@ public class RestApiControllerAdvice extends ResponseEntityExceptionHandler {
         return ResponseEntity
                 .status(status)
                 // DefaultHandlerExceptionResolver로 넘어가는 예외를 어떤식으로 처리할지
+                // 묶어서 처리
                 .body(new ErrorResult(status.toString(), ex.getMessage()));
     }
 

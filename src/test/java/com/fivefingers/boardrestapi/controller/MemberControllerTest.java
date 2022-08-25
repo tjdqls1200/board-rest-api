@@ -54,7 +54,7 @@ class MemberControllerTest {
     public void join() throws Exception {
         //given
         CreateMemberDto createMemberDto = createMemberBuild(1);
-        given(memberService.join(any(Member.class))).willReturn(1L);
+        given(memberService.join(any(CreateMemberDto.class))).willReturn(1L);
 
         //when
         ResultActions resultActions = mockMvc

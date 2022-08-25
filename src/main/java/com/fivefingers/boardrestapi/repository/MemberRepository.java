@@ -1,5 +1,6 @@
 package com.fivefingers.boardrestapi.repository;
 
+import com.fivefingers.boardrestapi.domain.member.Authority;
 import com.fivefingers.boardrestapi.domain.member.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -29,6 +30,7 @@ public class MemberRepository {
     }
 
     public List<Member> findAll() {
+
         return em.createQuery("select m from Member m", Member.class).getResultList();
     }
 

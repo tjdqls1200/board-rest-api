@@ -1,11 +1,13 @@
 package com.fivefingers.boardrestapi.controller;
 
-import com.fivefingers.boardrestapi.domain.member.Member;
-import com.fivefingers.boardrestapi.repository.MemberRepository;
+import com.fivefingers.boardrestapi.domain.member.*;
+import com.fivefingers.boardrestapi.domain.member.TokenDto;
 import com.fivefingers.boardrestapi.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.fivefingers.boardrestapi.domain.member.MemberDto.*;
+import static com.fivefingers.boardrestapi.domain.member.TokenDto.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,16 +25,36 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/members")
-    public ResponseEntity<CreateMemberDto> createMember(@RequestBody @Valid CreateMemberDto createMemberDto) {
-        // 여기서 테스트 해야될게 있나..?
-        // memberService.join()은 서비스에서 테스트할 부분
-        //
-        Member member = Member.from(createMemberDto);
-        Long memberId = memberService.join(member);
-        return ResponseEntity.created(URI.create(String.format("/api/v1/members/%d", memberId))).body(createMemberDto);
+    public ResponseEntity<ResponseMemberDto> createMember(
+            @RequestBody @Valid CreateMemberDto createMemberDto) {
+        Long memberId = memberService.join(createMemberDto);
+        Member member = memberService.findOne(memberId);
+
+        ResponseMemberDto responseMemberDto = ResponseMemberDto.from(member);
+        return ResponseEntity
+                .created(URI.create(String.format("/api/v1/members/%d", memberId)))
+                .body(responseMemberDto);
+    }
+
+    @PostMapping("/members/login")
+    public ResponseEntity<TokenDto> login(@Valid @RequestBody LoginMemberDto loginMemberDto) {
+        TokenDto tokenDto = memberService.login(loginMemberDto);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add("Authorization", "Bearer " + tokenDto.getAccessToken());
+
+        return ResponseEntity.ok().headers(httpHeaders).body(tokenDto);
+    }
+
+    @PostMapping("/members/reissue")
+    public ResponseEntity<TokenDto> reissue(@RequestBody RequestTokenDto requestTokenDto) {
+        TokenDto tokenDto = memberService.reissue(requestTokenDto);
+
+        return ResponseEntity.ok(tokenDto);
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/members/{id}")
     public ReadMemberDto readMember(@PathVariable Long id) {
         Member findMember = memberService.findOne(id);
@@ -39,6 +62,7 @@ public class MemberController {
     }
 
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/members")
     public WrappedList<List<ReadMemberDto>> readMemberList() {
         List<ReadMemberDto> memberDtoList = memberService.findAll().stream()
@@ -48,6 +72,7 @@ public class MemberController {
     }
 
     @PatchMapping("/members/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Object> updateMember(@PathVariable Long id,
                                                         @RequestBody @Valid UpdateMemberDto updateMemberDto) {
         if (!memberService.update(id, updateMemberDto)) {
@@ -58,6 +83,7 @@ public class MemberController {
     }
 
     @DeleteMapping("/members/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Object> deleteMember(@PathVariable Long id) {
         memberService.delete(id);
         return ResponseEntity.ok().build();

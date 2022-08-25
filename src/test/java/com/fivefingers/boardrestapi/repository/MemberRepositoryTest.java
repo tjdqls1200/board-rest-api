@@ -132,6 +132,7 @@ class MemberRepositoryTest {
         Member memberB = Member.from(createMemberBuild(2));
         memberRepository.save(memberA);
         em.flush();
+        // 예외 발생 x
         em.remove(memberB);
 
         em.detach(memberA);

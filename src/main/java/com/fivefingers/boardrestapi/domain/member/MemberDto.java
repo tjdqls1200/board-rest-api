@@ -5,13 +5,33 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class MemberDto {
+    @Data
+    @Builder
+    @AllArgsConstructor
+    public static class LoginMemberDto {
+        @NotBlank
+        @Pattern(regexp = "^[a-zA-Z0-9]*${6,12}",
+                message = "아이디는 영어와 숫자를 포함한 6 ~ 12자 이내여야 합니다.")
+        private String loginId;
+
+        @NotBlank
+        @Pattern(regexp = "(?=.*[A-Z])(?=.*\\W)(?=\\S+$).{10,16}",
+                message = "비밀번호는 대문자, 특수문자를 포함한 10 ~ 16자 이내여야 합니다.")
+        private String password;
+
+        public UsernamePasswordAuthenticationToken createBeforeAuthenticationToken() {
+            return new UsernamePasswordAuthenticationToken(this.loginId, this.password);
+        }
+    }
+
     @Data
     @Builder
     @AllArgsConstructor
@@ -27,6 +47,26 @@ public class MemberDto {
         @NotBlank
         @Size(min = 2, max = 10, message = "닉네임은 2 ~ 10 자리 이내로 입력해야 됩니다.")
         private String username;
+
+    }
+
+    @Data
+    @Builder
+    @AllArgsConstructor
+    public static class ResponseMemberDto {
+        private String loginId;
+        private String username;
+        private List<Role> role;
+
+        public static ResponseMemberDto from(Member member) {
+            return new ResponseMemberDto(
+                    member.getLoginId(),
+                    member.getUsername(),
+                    member.getMemberAuthorities().stream()
+                            .map(MemberAuthority::getAuthority)
+                            .map(Authority::getRole)
+                            .collect(Collectors.toList()));
+        }
     }
 
     @Data
