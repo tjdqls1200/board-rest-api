@@ -1,7 +1,5 @@
 package com.fivefingers.boardrestapi.jwt;
 
-import com.fivefingers.boardrestapi.domain.member.RefreshToken;
-import com.fivefingers.boardrestapi.domain.member.TokenDto;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -14,11 +12,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-
 import java.security.Key;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.fivefingers.boardrestapi.domain.member.TokenDto.*;
 import static com.fivefingers.boardrestapi.jwt.JwtTokenTime.*;
 import static java.time.Instant.*;
 
@@ -28,7 +26,6 @@ public class JwtAuthenticationProvider {
 
     private final Key key;
     private static final String AUTHORITIES_KEY = "auth";
-    private static final String AUTHORIZATION_TYPE = "bearer";
 
     public JwtAuthenticationProvider(@Value("${jwt.secret}") String secret) {
         key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
@@ -51,10 +48,13 @@ public class JwtAuthenticationProvider {
         return false;
     }
 
-    // 토큰 정보로 클레임을 만들고 이를 이용해 유저 객체를 생성해서 인증이 완료된 UsernamePasswordAuthenticationToken을 반환
-    public Authentication getAuthenticationToken(String token) {
-        Claims claims = parseClaims(token);
+
+    public Authentication getAuthenticationToken(String accessToken) {
+        // 만료된 AccessToken을 넘겨 받아서 파싱
+        Claims claims = parseClaims(accessToken);
+        // UserDetails 생성하기 위해 권한 정보 꺼냄
         Collection<? extends GrantedAuthority> authorities = getAuthoritiesFromClaims(claims);
+
         UserDetails userDetails = User.builder()
                 .username(claims.getSubject())
                 .password("") // password 안 넣으면 안됨!!!
@@ -63,53 +63,53 @@ public class JwtAuthenticationProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 
-    private Claims parseClaims(String token) {
-        return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+    private Claims parseClaims(String accessToken) {
+        try {
+            JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
+            return jwtParser.parseClaimsJws(accessToken).getBody();
+        } catch (ExpiredJwtException e) {
+            // reissue 요청 시 만료된 AccessToken을 보내기 때문에 ExpiredException 발생
+            return e.getClaims();
+        }
     }
 
-    private List<SimpleGrantedAuthority> getAuthoritiesFromClaims(Claims claims) {
-        return Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+
+    private Collection<? extends GrantedAuthority> getAuthoritiesFromClaims(Claims claims) {
+        String[] authorities = claims.get(AUTHORITIES_KEY).toString().split(",");
+        return Arrays.stream(authorities)
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
     }
 
-
-    //AuthenticationManager의 authenticate(Authentication authentication)
-    public TokenDto createToken(Authentication authentication) {
+    public String createAccessToken(Authentication authentication) {
         Date accessTokenExpireTime = Date.from(
-                now().plusSeconds(ACCESS_TOKEN_EXPIRE_Min.getCalculate().apply(30L)));
-        Date refreshTokenExpireTime = Date.from(
-                now().plusSeconds(REFRESH_TOKEN_EXPIRE_DAY.getCalculate().apply(7L)));
-
-        return TokenDto.builder()
-                .grantType(AUTHORIZATION_TYPE)
-                .accessToken(createAccessToken(authentication, accessTokenExpireTime))
-                .refreshToken(createRefreshToken(refreshTokenExpireTime))
-                .accessTokenExpiresIn(accessTokenExpireTime.getTime())
-                .build();
-    }
-
-    private String createAccessToken(Authentication authentication, Date accessTokenExpireTime) {
+                now().plusSeconds(ACCESS_TOKEN_EXPIRE_MIN.getExpired()));
         return Jwts.builder()
                 .setSubject(authentication.getName())
-                .claim(AUTHORITIES_KEY, getAuthorities(authentication))
+                .claim(AUTHORITIES_KEY, joinAuthorities(authentication))
                 .setExpiration(accessTokenExpireTime)
                 .signWith(key, SignatureAlgorithm.HS512)
                 .compact();
     }
 
-    private String createRefreshToken(Date refreshTokenExpireTime) {
-        return Jwts.builder()
-                .setExpiration(refreshTokenExpireTime)
-                .signWith(key, SignatureAlgorithm.HS512)
-                .compact();
-
-    }
-
-
-    private String getAuthorities(Authentication authentication) {
+    private String joinAuthorities(Authentication authentication) {
         return authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
     }
+
+    public RefreshTokenDto createRefreshToken(Authentication authentication) {
+        Date refreshTokenExpireTime = Date.from(
+                now().plusSeconds(REFRESH_TOKEN_EXPIRE_DAY.getExpired()));
+        String refreshToken = Jwts.builder()
+                .setExpiration(refreshTokenExpireTime)
+                .signWith(key, SignatureAlgorithm.HS512)
+                .compact();
+        return RefreshTokenDto.builder()
+                .loginId(authentication.getName())
+                .value(refreshToken)
+                .refreshTokenExp(refreshTokenExpireTime.getTime())
+                .build();
+    }
+
 }

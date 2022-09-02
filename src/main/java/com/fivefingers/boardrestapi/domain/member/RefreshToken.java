@@ -1,14 +1,14 @@
 package com.fivefingers.boardrestapi.domain.member;
 
-import com.fivefingers.boardrestapi.jwt.JwtTokenTime;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.time.Instant;
 import java.util.Date;
 
+import static com.fivefingers.boardrestapi.domain.member.TokenDto.*;
 import static com.fivefingers.boardrestapi.jwt.JwtTokenTime.*;
 import static java.time.Instant.*;
 
@@ -20,22 +20,22 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
     private String loginId;
 
     private String value;
 
     private Long refreshTokenExp;
 
-    public static RefreshToken createRefreshToken(String loginId, String refreshTokenValue) {
+    public static RefreshToken from(RefreshTokenDto refreshTokenDto) {
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.loginId = loginId;
-        refreshToken.value = refreshTokenValue;
+        refreshToken.loginId = refreshTokenDto.getLoginId();
+        refreshToken.value = refreshTokenDto.getValue();
+        refreshToken.refreshTokenExp = refreshTokenDto.getRefreshTokenExp();
         return refreshToken;
     }
 
-    public void renewalExp() {
-        this.refreshTokenExp = Date.from(
-                now().plusSeconds(REFRESH_TOKEN_EXPIRE_DAY.getCalculate().apply(7L))).getTime();
+    public void updateToken(RefreshTokenDto refreshTokenDto) {
+        this.value = refreshTokenDto.getValue();
+        this.refreshTokenExp = refreshTokenDto.getRefreshTokenExp();
     }
 }

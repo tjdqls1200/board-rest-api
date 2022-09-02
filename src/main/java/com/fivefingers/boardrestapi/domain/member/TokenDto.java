@@ -1,5 +1,7 @@
 package com.fivefingers.boardrestapi.domain.member;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,10 +10,10 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 public class TokenDto {
-    private String grantType;
     private String accessToken;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private String refreshToken;
-    private Long accessTokenExpiresIn;
 
     @Data
     @AllArgsConstructor
@@ -19,8 +21,18 @@ public class TokenDto {
         private String accessToken;
 
         public static AccessTokenDto from(TokenDto tokenDto) {
+
             return new AccessTokenDto(tokenDto.getAccessToken());
         }
+    }
+
+    @Builder
+    @Data
+    @AllArgsConstructor
+    public static class RefreshTokenDto {
+        private String value;
+        private String loginId;
+        private Long refreshTokenExp;
     }
 
     @Data

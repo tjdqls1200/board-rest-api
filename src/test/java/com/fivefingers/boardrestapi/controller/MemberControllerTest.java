@@ -38,10 +38,8 @@ class MemberControllerTest {
     @MockBean
     private MemberService memberService;
 
-
     @Autowired
     private Gson gson;
-
 
     @BeforeEach
     public void init() {

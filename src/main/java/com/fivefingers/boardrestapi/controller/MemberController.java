@@ -1,23 +1,20 @@
 package com.fivefingers.boardrestapi.controller;
 
 import com.fivefingers.boardrestapi.domain.member.*;
-import com.fivefingers.boardrestapi.domain.member.TokenDto;
 import com.fivefingers.boardrestapi.service.MemberService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import static com.fivefingers.boardrestapi.domain.member.MemberDto.*;
-import static com.fivefingers.boardrestapi.domain.member.TokenDto.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -30,27 +27,9 @@ public class MemberController {
         Long memberId = memberService.join(createMemberDto);
         Member member = memberService.findOne(memberId);
 
-        ResponseMemberDto responseMemberDto = ResponseMemberDto.from(member);
         return ResponseEntity
                 .created(URI.create(String.format("/api/v1/members/%d", memberId)))
-                .body(responseMemberDto);
-    }
-
-    @PostMapping("/members/login")
-    public ResponseEntity<TokenDto> login(@Valid @RequestBody LoginMemberDto loginMemberDto) {
-        TokenDto tokenDto = memberService.login(loginMemberDto);
-
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add("Authorization", "Bearer " + tokenDto.getAccessToken());
-
-        return ResponseEntity.ok().headers(httpHeaders).body(tokenDto);
-    }
-
-    @PostMapping("/members/reissue")
-    public ResponseEntity<TokenDto> reissue(@RequestBody RequestTokenDto requestTokenDto) {
-        TokenDto tokenDto = memberService.reissue(requestTokenDto);
-
-        return ResponseEntity.ok(tokenDto);
+                .body(ResponseMemberDto.from(member));
     }
 
     @ResponseStatus(HttpStatus.OK)
@@ -73,8 +52,9 @@ public class MemberController {
 
     @PatchMapping("/members/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Object> updateMember(@PathVariable Long id,
-                                                        @RequestBody @Valid UpdateMemberDto updateMemberDto) {
+    public ResponseEntity<Object> updateMember(
+            @PathVariable Long id,
+            @RequestBody @Valid UpdateMemberDto updateMemberDto) {
         if (!memberService.update(id, updateMemberDto)) {
             //변경 없을 경우 HTTP Status 204 Code
             return ResponseEntity.noContent().build();
@@ -82,10 +62,10 @@ public class MemberController {
         return ResponseEntity.ok(URI.create(String.format("/api/v1/members/%d", id)));
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("/members/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Object> deleteMember(@PathVariable Long id) {
+    public void deleteMember(@PathVariable Long id) {
         memberService.delete(id);
-        return ResponseEntity.ok().build();
     }
 }

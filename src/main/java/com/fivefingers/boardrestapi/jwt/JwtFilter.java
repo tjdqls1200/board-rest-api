@@ -1,5 +1,7 @@
 package com.fivefingers.boardrestapi.jwt;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -26,22 +28,24 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String jwt = resolveToken(request);
-        log.info("인증 jwt = " + jwt);
-        // jwt Token 확인 후 UsernamePasswordAuthenticationToken을 생성해서 SecurityContext에 저장
-        if (StringUtils.hasText(jwt) && provider.validateToken(jwt)) {
-            Authentication authentication = provider.getAuthenticationToken(jwt);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.info("jwtFilter : JWT 토큰 인증 완료, URL : " + request.getRequestURL() );
-        } else {
-            // AccessToken이 만료되면 
-            log.info("jwtFilter : 유효한 JWT 토큰 없음, URL : " + request.getRequestURL() );
+        String accessToken = getAccessToken(request);
+        String requestURL = request.getServletPath();
+        log.info("requestURL = " + requestURL);
+        if (requestURL.endsWith("reissue")) {
+            log.info("reissue check");
+            filterChain.doFilter(request, response);
+            return;
         }
-        filterChain.doFilter(request, response);
+        if (StringUtils.hasText(accessToken) && provider.validateToken(accessToken)) {
+            Authentication authentication = provider.getAuthenticationToken(accessToken);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.info("jwtFilter : JWT 토큰 인증 완료, URL : " + request.getRequestURL());
+        }
+            filterChain.doFilter(request,response);
     }
 
     // Request Header에서 토근 정보 확인
-    private String resolveToken(HttpServletRequest request) {
+    private String getAccessToken(HttpServletRequest request) {
         String token = request.getHeader(AUTHORIZATION_HEADER);
         return (StringUtils.hasText(token) && token.startsWith(TYPE_PREFIX)) ? token.substring(7) : null;
 

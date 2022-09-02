@@ -1,6 +1,5 @@
 package com.fivefingers.boardrestapi.domain.member;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +17,7 @@ public class Authority {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public static Authority createAuthority(Role role) {
+    public static Authority createAuthorities(Role role) {
         Authority authority = new Authority();
         authority.role = role;
         return authority;

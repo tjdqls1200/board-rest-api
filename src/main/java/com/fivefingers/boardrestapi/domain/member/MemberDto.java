@@ -28,7 +28,7 @@ public class MemberDto {
         private String password;
 
         public UsernamePasswordAuthenticationToken createBeforeAuthenticationToken() {
-            return new UsernamePasswordAuthenticationToken(this.loginId, this.password);
+            return new UsernamePasswordAuthenticationToken(loginId, password);
         }
     }
 

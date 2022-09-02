@@ -37,7 +37,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        JwtFilter jwtFilter = new JwtFilter(jwtAuthenticationProvider);
         http
                 .csrf().disable()
 
@@ -53,13 +52,14 @@ public class SecurityConfig {
                 .authorizeRequests((auth) -> auth
                         .antMatchers(HttpMethod.POST, "/api/v1/members")
                         .permitAll()
-                        .antMatchers(HttpMethod.POST, "/api/v1/members/login")
+
+                        .antMatchers("/api/v1/auth/**")
                         .permitAll()
-                        // 현재는 나머지 전부 인증
-                        .anyRequest().authenticated()
+
+                        .anyRequest()
+                        .authenticated()
                 )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .httpBasic(Customizer.withDefaults());
+                .addFilterBefore(new JwtFilter(jwtAuthenticationProvider), UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
     }
