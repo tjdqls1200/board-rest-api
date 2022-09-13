@@ -19,14 +19,9 @@ public class RestApiControllerAdvice extends ResponseEntityExceptionHandler {
     @Override
     protected ResponseEntity<Object> handleExceptionInternal(
             Exception ex, Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        return ResponseEntity
-                .status(status)
-                // DefaultHandlerExceptionResolver로 넘어가는 예외를 어떤식으로 처리할지
-                // 묶어서 처리
-                .body(new ErrorResult(status.toString(), ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 
-    //@Valid 유효성 통과하지 못하면 MethodArgumentNotValidException
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex,
