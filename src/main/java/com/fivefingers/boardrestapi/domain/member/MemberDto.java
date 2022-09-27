@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import javax.validation.constraints.*;
@@ -98,7 +99,7 @@ public class MemberDto {
 
     @Data
     @AllArgsConstructor
-    public static class ReadMemberDto {
+    public static class ReadMemberDto extends RepresentationModel<ReadMemberDto> {
         private String loginId;
         private String username;
 

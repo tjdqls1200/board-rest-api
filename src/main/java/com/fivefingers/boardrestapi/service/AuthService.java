@@ -7,7 +7,11 @@ import com.fivefingers.boardrestapi.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -42,6 +46,7 @@ public class AuthService {
             SecurityContext securityContext = SecurityContextHolder.getContext();
             securityContext.setAuthentication(afterAuthentication);
 
+            // 인증 완료된 Authentication 인스턴스로 JWT 토큰 생성
             String accessToken = jwtAuthenticationProvider.createAccessToken(afterAuthentication);
             String refreshToken = saveRefreshToken(jwtAuthenticationProvider.createRefreshToken(afterAuthentication));
 

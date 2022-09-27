@@ -57,12 +57,18 @@ public class JwtAuthenticationProvider {
 
         UserDetails userDetails = User.builder()
                 .username(claims.getSubject())
-                .password("") // password 안 넣으면 안됨!!!
+                .password("") // password를 Null로 두면 안됨
                 .authorities(authorities)
                 .build();
         return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
     }
 
+    private Collection<? extends GrantedAuthority> getAuthoritiesFromClaims(Claims claims) {
+        String[] authorities = claims.get(AUTHORITIES_KEY).toString().split(",");
+        return Arrays.stream(authorities)
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+    }
     private Claims parseClaims(String accessToken) {
         try {
             JwtParser jwtParser = Jwts.parserBuilder().setSigningKey(key).build();
@@ -71,14 +77,6 @@ public class JwtAuthenticationProvider {
             // reissue 요청 시 만료된 AccessToken을 보내기 때문에 ExpiredException 발생
             return e.getClaims();
         }
-    }
-
-
-    private Collection<? extends GrantedAuthority> getAuthoritiesFromClaims(Claims claims) {
-        String[] authorities = claims.get(AUTHORITIES_KEY).toString().split(",");
-        return Arrays.stream(authorities)
-                .map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
     }
 
     public String createAccessToken(Authentication authentication) {

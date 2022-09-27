@@ -1,7 +1,5 @@
 package com.fivefingers.boardrestapi.jwt;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -18,21 +16,16 @@ import java.io.IOException;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
-
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String TYPE_PREFIX = "Bearer ";
-
     private final JwtAuthenticationProvider provider;
 
-    // 토큰의 인증 정보를 SecurityContext에 저장
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String accessToken = getAccessToken(request);
         String requestURL = request.getServletPath();
-        log.info("requestURL = " + requestURL);
         if (requestURL.endsWith("reissue")) {
-            log.info("reissue check");
             filterChain.doFilter(request, response);
             return;
         }

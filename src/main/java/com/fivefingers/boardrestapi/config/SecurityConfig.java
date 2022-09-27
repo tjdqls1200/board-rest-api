@@ -19,9 +19,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-@Configuration
 @RequiredArgsConstructor
-@EnableWebSecurity // @Configuration 메타 애노테이션
+@EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
     private final JwtAuthenticationProvider jwtAuthenticationProvider;
@@ -34,7 +33,6 @@ public class SecurityConfig {
                 .ignoring()
                 .antMatchers("/favicon.ico", "/h2-console/**"));
     }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -59,7 +57,8 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated()
                 )
-                .addFilterBefore(new JwtFilter(jwtAuthenticationProvider), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtFilter(jwtAuthenticationProvider),
+                        UsernamePasswordAuthenticationFilter.class);
 
                 return http.build();
     }

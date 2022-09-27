@@ -23,16 +23,6 @@ public class MemberAuthority {
     @JoinColumn(name = "authority_id")
     private Authority authority;
 
-    public static MemberAuthority addAuthority(Authority authority) {
-        MemberAuthority memberAuthority = new MemberAuthority();
-        memberAuthority.authority = authority;
-        return memberAuthority;
-    }
-
-    public void addMember(Member member) {
-        this.member = member;
-    }
-
     public static MemberAuthority createMemberAuthority(Member member, Authority authority) {
         MemberAuthority memberAuthority = new MemberAuthority();
         memberAuthority.member = member;

@@ -60,30 +60,26 @@ public class Member {
                 .password(passwordEncoder.encode(createMemberDto.getPassword()))
                 .username(createMemberDto.getUsername())
                 .build();
-        // 권한 생성
-        List<MemberAuthority> memberAuthorities = Arrays.stream(roles)
-                .map(Authority::createAuthorities)
-                .map(MemberAuthority::addAuthority)
-                .collect(Collectors.toList());
-        // 권한 저장
-        for (MemberAuthority memberAuthority : memberAuthorities) {
-            member.addMemberAuthority(memberAuthority);
+        for (Role role : roles) {
+            Authority authority = Authority.createAuthorities(role);
+            MemberAuthority memberAuthority = MemberAuthority.createMemberAuthority(member, authority);
+            member.memberAuthorities.add(memberAuthority);
         }
         return member;
     }
-    private void addMemberAuthority(MemberAuthority memberAuthority) {
-        memberAuthorities.add(memberAuthority);
-        memberAuthority.addMember(this);
-    }
-
     public boolean updateMember(UpdateMemberDto updateMemberDto, PasswordEncoder passwordEncoder) {
-        String newPassword = passwordEncoder.encode(updateMemberDto.getNewPassword());
+        boolean updated = false;
+        String newPassword = updateMemberDto.getNewPassword();
         String newUsername = updateMemberDto.getUsername();
-        if (password.equals(newPassword) && this.username.equals(newUsername)) {
-            return false;
+
+        if (!passwordEncoder.matches(newPassword, this.password)) {
+            password = passwordEncoder.encode(newPassword);
+            updated = true;
         }
-        password = newPassword;
-        username = newUsername;
-        return true;
+        if (!(username.equals(newUsername))) {
+            username = newUsername;
+            updated = true;
+        }
+        return updated;
     }
 }

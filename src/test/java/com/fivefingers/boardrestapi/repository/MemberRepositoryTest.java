@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 //@DataJpaTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+//@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 //@ActiveProfiles("test")
 @SpringBootTest
 @Transactional
@@ -39,6 +39,7 @@ class MemberRepositoryTest {
 
     @BeforeEach
     public void init() {
+
         em.clear();
     }
 
@@ -58,7 +59,7 @@ class MemberRepositoryTest {
         memberRepository.save(member);
 
         //then
-        assertThat(member.getId()).isEqualTo(1L);
+        assertThat(member.getId()).isEqualTo(member.getId());
     }
 
 
@@ -76,7 +77,7 @@ class MemberRepositoryTest {
         //em.flush();
 
         //when
-        Optional<Member> findMember = memberRepository.findById(1L);
+        Optional<Member> findMember = memberRepository.findById(member.getId());
 
         //then
         assertThat(findMember).isNotEmpty();

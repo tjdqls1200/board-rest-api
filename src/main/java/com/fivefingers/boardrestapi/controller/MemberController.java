@@ -10,10 +10,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import static com.fivefingers.boardrestapi.domain.member.MemberDto.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Slf4j
 @RestController
@@ -38,7 +38,9 @@ public class MemberController {
     @GetMapping("/members/{id}")
     public ReadMemberDto readMember(@PathVariable Long id) {
         Member findMember = memberService.findOne(id);
-        return ReadMemberDto.from(findMember);
+        ReadMemberDto readMemberDto = ReadMemberDto.from(findMember);
+        readMemberDto.add(linkTo(methodOn(this.getClass()).readMemberList()).withRel("all-members"));
+        return readMemberDto;
     }
 
     @ResponseStatus(HttpStatus.OK)
