@@ -14,8 +14,6 @@ import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import static com.fivefingers.boardrestapi.domain.member.MemberDto.*;
 
 @Getter
@@ -44,7 +42,6 @@ public class Member {
         Assert.hasText(loginId, "must not be empty!");
         Assert.hasText(password, "must not be empty");
         Assert.hasText(username, "must not be empty");
-
         this.loginId = loginId;
         this.password = password;
         this.username = username;
@@ -67,6 +64,7 @@ public class Member {
         }
         return member;
     }
+
     public boolean updateMember(UpdateMemberDto updateMemberDto, PasswordEncoder passwordEncoder) {
         boolean updated = false;
         String newPassword = updateMemberDto.getNewPassword();

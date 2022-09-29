@@ -2,8 +2,15 @@ package com.fivefingers.boardrestapi.controller;
 
 import com.fivefingers.boardrestapi.domain.member.*;
 import com.fivefingers.boardrestapi.service.MemberService;
+import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +23,7 @@ import static com.fivefingers.boardrestapi.domain.member.MemberDto.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Slf4j
+@Api(tags = "Members")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1")
@@ -33,14 +41,24 @@ public class MemberController {
                 .body(ResponseMemberDto.from(member));
     }
 
+
+    @Operation(summary = "read one member", description = "example")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "NOT FOUND")
+    })
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/members/{id}")
-    public ReadMemberDto readMember(@PathVariable Long id) {
+    public EntityModel<ReadMemberDto> readMember(@PathVariable Long id) {
         Member findMember = memberService.findOne(id);
         ReadMemberDto readMemberDto = ReadMemberDto.from(findMember);
-        readMemberDto.add(linkTo(methodOn(this.getClass()).readMemberList()).withRel("all-members"));
-        return readMemberDto;
+
+        // EntityModel<ReadMemberDto> model = new EntityModel<>(readMemberDto);
+        EntityModel<ReadMemberDto> model = EntityModel.of(readMemberDto);
+        WebMvcLinkBuilder linkTo = linkTo(methodOn(this.getClass()).readMemberList());
+        model.add(linkTo.withRel("all-members"));
+        return model;
     }
 
     @ResponseStatus(HttpStatus.OK)

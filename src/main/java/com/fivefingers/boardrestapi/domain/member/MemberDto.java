@@ -99,7 +99,7 @@ public class MemberDto {
 
     @Data
     @AllArgsConstructor
-    public static class ReadMemberDto extends RepresentationModel<ReadMemberDto> {
+    public static class ReadMemberDto {
         private String loginId;
         private String username;
 
